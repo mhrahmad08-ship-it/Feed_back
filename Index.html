@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Teacher Feedback System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --purple-50: #EEEDFE;
+    --purple-100: #CECBF6;
+    --purple-200: #AFA9EC;
+    --purple-400: #7F77DD;
+    --purple-600: #534AB7;
+    --purple-800: #3C3489;
+    --purple-900: #26215C;
+    --teal-50: #E1F5EE;
+    --teal-400: #1D9E75;
+    --teal-600: #0F6E56;
+    --green-50: #EAF3DE;
+    --green-800: #27500A;
+    --blue-50: #E6F1FB;
+    --blue-800: #0C447C;
+    --amber-50: #FAEEDA;
+    --amber-800: #633806;
+    --red-50: #FCEBEB;
+    --red-600: #A32D2D;
+    --gray-100: #D3D1C7;
+    --gray-400: #888780;
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-24px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes popIn {
+    0%   { transform: scale(0.65); opacity: 0; }
+    70%  { transform: scale(1.07); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+  }
+  @keyframes orb1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%       { transform: translate(20px, -15px) scale(1.05); }
+    66%       { transform: translate(-10px, 10px) scale(0.97); }
+  }
+  @keyframes orb2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    40%       { transform: translate(-18px, 12px) scale(1.04); }
+    75%       { transform: translate(14px, -8px) scale(0.98); }
+  }
+  @keyframes stagger {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0eeff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 48px;
+    color: #1a1a2e;
+  }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .app-header {
+    width: 100%;
+    max-width: 740px;
+    background: linear-gradient(135deg, var(--purple-600) 0%, var(--purple-800) 55%, var(--purple-900) 100%);
+    border-radius: 20px 20px 0 0;
+    padding: 22px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden;
+    animation: fadeInUp 0.5s ease both;
+  }
+  .app-header .orb {
+    position: absolute; border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    pointer-events: none;
+  }
+  .app-header .orb1 { width: 180px; height: 180px; top: -70px; right: -50px; animation: orb1 8s ease-in-out infinite; }
+  .app-header .orb2 { width: 110px; height: 110px; bottom: -40px; left: 25%; animation: orb2 10s ease-in-out infinite; }
+
+  .brand { display: flex; align-items: center; gap: 14px; z-index: 1; }
+  .brand-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    animation: float 3.5s ease-in-out infinite;
+  }
+  .brand-icon svg { width: 22px; height: 22px; stroke: white; fill: none; stroke-width: 1.8; }
+  .brand-title { font-size: 17px; font-weight: 600; color: white; }
+  .brand-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+  .nav { display: flex; gap: 6px; z-index: 1; }
+  .nav-btn {
+    padding: 8px 18px; border-radius: 20px; border: none; cursor: pointer;
+    font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif;
+    background: rgba(255,255,255,0.13); color: rgba(255,255,255,0.8);
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.22); color: white; transform: translateY(-1px); }
+  .nav-btn.active { background: white; color: var(--purple-600); font-weight: 600; }
+  .nav-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* ── Card shell ─────────────────────────────────────── */
+  .app-card {
+    width: 100%; max-width: 740px;
+    background: white;
+    border-radius: 0 0 20px 20px;
+    border: 1px solid rgba(175,169,236,0.3);
+    border-top: none;
+    animation: fadeInUp 0.5s 0.07s ease both;
+    box-shadow: 0 12px 48px rgba(83,74,183,0.12);
+  }
+
+  /* ── Page sections ──────────────────────────────────── */
+  .page { padding: 28px; }
+  .page.hidden { display: none; }
+
+  /* ── Teacher card ───────────────────────────────────── */
+  .teacher-card {
+    background: linear-gradient(135deg, var(--purple-50) 0%, #E6F1FB 100%);
+    border: 1px solid var(--purple-100);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 26px;
+    animation: slideInLeft 0.4s 0.15s ease both;
+  }
+  .avatar {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-400), var(--purple-800));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 600; color: white; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(83,74,183,0.3);
+  }
+  .teacher-name { font-size: 15px; font-weight: 600; color: var(--purple-800); }
+  .teacher-meta { font-size: 13px; color: var(--purple-600); margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+  .teacher-meta svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .badge {
+    margin-left: auto; padding: 5px 14px; border-radius: 20px;
+    background: var(--purple-600); color: white;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase; white-space: nowrap;
+  }
+
+  /* ── Form fields ────────────────────────────────────── */
+  .field { margin-bottom: 22px; animation: fadeInUp 0.4s ease both; }
+  .field:nth-child(3) { animation-delay: 0.1s; }
+  .field:nth-child(4) { animation-delay: 0.18s; }
+
+  .field-label {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 600; color: var(--gray-400);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px;
+  }
+  .field-label svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Rating tiles */
+  .rating-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rating-opt {
+    padding: 13px 16px; border-radius: 10px;
+    border: 1.5px solid var(--gray-100); cursor: pointer;
+    background: white; color: #333;
+    font-size: 14px; font-weight: 500; font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .rating-opt:hover { border-color: var(--purple-400); background: var(--purple-50); transform: translateY(-2px); }
+  .rating-opt.selected { border-color: var(--purple-600); background: var(--purple-50); color: var(--purple-800); }
+  .rating-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-excellent { background: #639922; }
+  .dot-good      { background: #378ADD; }
+  .dot-average   { background: #BA7517; }
+  .dot-poor      { background: #E24B4A; }
+
+  textarea {
+    width: 100%; padding: 14px 16px;
+    border: 1.5px solid var(--gray-100); border-radius: 10px;
+    font-size: 14px; font-family: 'Inter', sans-serif; line-height: 1.65;
+    color: #1a1a2e; resize: vertical; min-height: 110px; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea:focus {
+    border-color: var(--purple-400);
+    box-shadow: 0 0 0 4px rgba(127,119,221,0.14);
+  }
+  textarea::placeholder { color: var(--gray-400); }
+
+  .err-msg {
+    display: none; color: var(--red-600);
+    font-size: 13px; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .err-msg svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  .err-hide { display: none !important; }
+
+  .submit-btn {
+    width: 100%; padding: 15px;
+    background: linear-gradient(135deg, var(--purple-400) 0%, var(--purple-600) 100%);
+    color: white; border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 600; font-family: 'Inter', sans-serif;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+  }
+  .submit-btn svg { width: 17px; height: 17px; stroke: white; fill: none; stroke-width: 2; }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(83,74,183,0.4); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── Success screen ─────────────────────────────────── */
+  .success-screen {
+    display: none; text-align: center; padding: 36px 24px;
+    animation: popIn 0.45s ease both;
+  }
+  .success-icon-wrap {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, #5DCAA5, var(--teal-600));
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 6px 24px rgba(29,158,117,0.35);
+    animation: popIn 0.5s 0.1s ease both;
+  }
+  .success-icon-wrap svg { width: 32px; height: 32px; stroke: white; fill: none; stroke-width: 2.5; }
+  .success-title { font-size: 20px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: var(--gray-400); margin-bottom: 24px; line-height: 1.6; }
+  .back-btn {
+    padding: 11px 26px; border-radius: 20px;
+    border: 1.5px solid var(--purple-600); background: transparent;
+    color: var(--purple-600); font-size: 14px; font-weight: 600;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .back-btn:hover { background: var(--purple-50); transform: translateY(-1px); }
+
+  /* ── Responses page ─────────────────────────────────── */
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 22px;
+    animation: fadeInUp 0.4s ease both;
+  }
+  .section-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--purple-50);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .section-icon svg { width: 18px; height: 18px; stroke: var(--purple-600); fill: none; stroke-width: 2; }
+  .section-title { font-size: 18px; font-weight: 600; color: #1a1a2e; }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeInUp 0.4s 0.05s ease both;
+  }
+  .stat-card {
+    background: #fafafa;
+    border: 1px solid rgba(175,169,236,0.2);
+    border-radius: 12px; padding: 14px; text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(83,74,183,0.1); }
+  .stat-num { font-size: 24px; font-weight: 600; }
+  .stat-label { font-size: 11px; color: var(--gray-400); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-num.total    { color: var(--purple-600); }
+  .stat-num.exc      { color: #3B6D11; }
+  .stat-num.good-c   { color: #185FA5; }
+  .stat-num.low      { color: var(--red-600); }
+
+  .response-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .response-card {
+    background: white;
+    border: 1px solid rgba(175,169,236,0.25);
+    border-left: 3px solid var(--purple-400);
+    border-radius: 12px; padding: 16px 18px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    animation: stagger 0.35s ease both;
+  }
+  .response-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(83,74,183,0.1); }
+  .response-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .resp-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple-200), var(--purple-400));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: white; flex-shrink: 0;
+  }
+  .resp-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+  .resp-subject { font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+  .rating-pill {
+    margin-left: auto; padding: 4px 12px; border-radius: 12px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+  }
+  .pill-excellent { background: var(--green-50); color: var(--green-800); }
+  .pill-good      { background: var(--blue-50);  color: var(--blue-800); }
+  .pill-average   { background: var(--amber-50); color: var(--amber-800); }
+  .pill-poor      { background: var(--red-50);   color: var(--red-600); }
+  .resp-text { font-size: 13px; color: #555; line-height: 1.65; }
+
+  .empty-state { text-align: center; padding: 48px 20px; }
+  .empty-state svg { width: 48px; height: 48px; stroke: var(--purple-200); fill: none; stroke-width: 1.5; margin-bottom: 14px; }
+  .empty-text { font-size: 14px; color: var(--gray-400); line-height: 1.6; }
+
+  /* ── Spinner ────────────────────────────────────────── */
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2.5px solid rgba(255,255,255,0.35);
+    border-top-color: white;
+    animation: spin 0.75s linear infinite;
+  }
+
+  /* ── Divider ────────────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid rgba(175,169,236,0.2); margin: 4px 0 24px; }
+
+  @media (max-width: 500px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .rating-grid { grid-template-columns: 1fr 1fr; }
+    .app-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .nav { width: 100%; justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="brand">
+    <div class="brand-icon">
+      <!-- school/graduation cap icon -->
+      <svg viewBox="0 0 24 24"><path d="M22 10v6M6 12l6 4 10-6.5L12 5 2 9.5 6 12z" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12v5l6 3 6-3v-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div>
+      <div class="brand-title">Teacher Feedback System</div>
+      <div class="brand-sub">Share your learning experience</div>
+    </div>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" id="navSubmit" onclick="showPage('submit')">
+      <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Submit
+    </button>
+    <button class="nav-btn" id="navResponses" onclick="showPage('responses')">
+      <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Responses
+    </button>
+  </nav>
+</header>
+
+<div class="app-card">
+
+  <!-- ── Submit page ──────────────────────────────────── -->
+  <section class="page" id="pageSubmit">
+
+    <div id="formWrap">
+      <div class="teacher-card">
+        <div class="avatar">MM</div>
+        <div>
+          <div class="teacher-name">Sir Mohsin Mumtaz</div>
+          <div class="teacher-meta">
+            <svg viewBox="0 0 24 24"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            AICT
+          </div>
+        </div>
+        <div class="badge">Your Teacher</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <svg viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Rating
+        </div>
+        <div class="rating-grid">
+          <button class="rating-opt" onclick="selectRating('Excellent', this)">
+            <span class="rating-dot dot-excellent"></span> Excellent
+          </button>
+          <button class="rating-opt" onclick="selectRating('Good', this)">
+            <span class="rating-dot dot-good"></span> Good
+          </button>
+          <button class="rating-opt" onclick="selectRating('Average', this)">
+            <span class="rating-dot dot-average"></span> Average
+          </button>
+          <button class="rating-opt" onclick="selectRating('Poor', this)">
+            <span class="rating-dot dot-poor"></span> Poor
+          </button>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">
+          <svg viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Your Feedback
+        </div>
+        <textarea id="feedbackText" placeholder="Share your honest thoughts about teaching quality, clarity, and engagement…"></textarea>
+      </div>
+
+      <div class="err-msg err-hide" id="errMsg">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Please select a rating and write your feedback before submitting.
+      </div>
+
+      <button class="submit-btn" id="submitBtn" onclick="handleSubmit()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Submit Feedback
+      </button>
+    </div>
+
+    <div class="success-screen" id="successWrap">
+      <div class="success-icon-wrap">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="success-title">Feedback submitted!</div>
+      <div class="success-sub">Thank you for taking the time to share your experience.<br>Your input helps improve the quality of teaching.</div>
+      <button class="back-btn" onclick="resetForm()">Submit another response</button>
+    </div>
+
+  </section>
+
+  <!-- ── Responses page ───────────────────────────────── -->
+  <section class="page hidden" id="pageResponses">
+
+    <div class="section-header">
+      <div class="section-icon">
+        <svg viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="section-title">Submitted Responses</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num total" id="statTotal">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num exc" id="statExcellent">0</div>
+        <div class="stat-label">Excellent</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num good-c" id="statGood">0</div>
+        <div class="stat-label">Good</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num low" id="statLow">0</div>
+        <div class="stat-label">Avg / Poor</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="response-list" id="responseList"></div>
+
+  </section>
+
+</div><!-- /.app-card -->
+
+<!-- ── Firebase SDKs ─────────────────────────────────── -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script>
+  /* ── Firebase config — replace with your own credentials ── */
+  const firebaseConfig = {
+    apiKey:            "YOUR_API_KEY",
+    authDomain:        "YOUR_AUTH_DOMAIN",
+    databaseURL:       "YOUR_DATABASE_URL",
+    projectId:         "YOUR_PROJECT_ID",
+    storageBucket:     "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId:             "YOUR_APP_ID"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const responsesRef = db.ref('feedbackResponses');
+
+  /* ── State ─────────────────────────────────────────── */
+  let selectedRating = '';
+
+  /* ── Navigation ────────────────────────────────────── */
+  function showPage(page) {
+    document.getElementById('pageSubmit').classList.toggle('hidden', page !== 'submit');
+    document.getElementById('pageResponses').classList.toggle('hidden', page !== 'responses');
+    document.getElementById('navSubmit').classList.toggle('active', page === 'submit');
+    document.getElementById('navResponses').classList.toggle('active', page === 'responses');
+    if (page === 'responses') loadResponses();
+  }
+
+  /* ── Rating selection ──────────────────────────────── */
+  function selectRating(val, el) {
+    selectedRating = val;
+    document.querySelectorAll('.rating-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('errMsg').classList.add('err-hide');
+  }
+
+  /* ── Submit ────────────────────────────────────────── */
+  function handleSubmit() {
+    const feedback = document.getElementById('feedbackText').value.trim();
+    if (!selectedRating || !feedback) {
+      document.getElementById('errMsg').classList.remove('err-hide');
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div>';
+
+    const entry = {
+      teacherName: 'Sir Mohsin Mumtaz',
+      subject: 'AICT',
+      rating: selectedRating,
+      feedback: feedback,
+      timestamp: Date.now()
+    };
+
+    responsesRef.push(entry)
+      .then(() => {
+        document.getElementById('formWrap').style.display = 'none';
+        document.getElementById('successWrap').style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="17" height="17" stroke="white" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Feedback';
+      })
+      .catch(err => {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" width="17" height="17" stroke="white" fill="none" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Submit Feedback';
+        const errEl = document.getElementById('errMsg');
+        errEl.textContent = '⚠ Unable to submit. Check your Firebase configuration.';
+        errEl.classList.remove('err-hide');
+      });
+  }
+
+  /* ── Reset form ────────────────────────────────────── */
+  function resetForm() {
+    selectedRating = '';
+    document.getElementById('feedbackText').value = '';
+    document.querySelectorAll('.rating-opt').forEach(o => o.classList.remove('selected'));
+    document.getElementById('errMsg').classList.add('err-hide');
+    document.getElementById('formWrap').style.display = 'block';
+    document.getElementById('successWrap').style.display = 'none';
+  }
+
+  /* ── Load responses ────────────────────────────────── */
+  function loadResponses() {
+    const list = document.getElementById('responseList');
+    list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><div class="empty-text">Loading responses…</div></div>';
+
+    responsesRef.orderByChild('timestamp').once('value')
+      .then(snapshot => {
+        const data = snapshot.val();
+
+        if (!data) {
+          list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><div class="empty-text">No responses yet.<br>Be the first to submit feedback.</div></div>';
+          updateStats([]);
+          return;
+        }
+
+        const entries = Object.values(data).sort((a, b) => b.timestamp - a.timestamp);
+        updateStats(entries);
+
+        list.innerHTML = entries.map((r, i) => {
+          const initials = r.teacherName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          const pillClass = { Excellent: 'pill-excellent', Good: 'pill-good', Average: 'pill-average', Poor: 'pill-poor' }[r.rating] || 'pill-average';
+          const delay = (Math.min(i, 6) * 0.06).toFixed(2);
+          return `
+            <div class="response-card" style="animation-delay:${delay}s">
+              <div class="response-top">
+                <div class="resp-avatar">${initials}</div>
+                <div>
+                  <div class="resp-name">${escHTML(r.teacherName)}</div>
+                  <div class="resp-subject">${escHTML(r.subject)}</div>
+                </div>
+                <span class="rating-pill ${pillClass}">${escHTML(r.rating)}</span>
+              </div>
+              <div class="resp-text">${escHTML(r.feedback)}</div>
+            </div>`;
+        }).join('');
+      })
+      .catch(err => {
+        console.error(err);
+        list.innerHTML = '<div class="empty-state"><div class="empty-text">⚠ Error loading responses.<br>Check your Firebase configuration.</div></div>';
+      });
+  }
+
+  function updateStats(entries) {
+    document.getElementById('statTotal').textContent    = entries.length;
+    document.getElementById('statExcellent').textContent = entries.filter(r => r.rating === 'Excellent').length;
+    document.getElementById('statGood').textContent      = entries.filter(r => r.rating === 'Good').length;
+    document.getElementById('statLow').textContent       = entries.filter(r => r.rating === 'Average' || r.rating === 'Poor').length;
+  }
+
+  /* ── XSS helper ────────────────────────────────────── */
+  function escHTML(v) {
+    if (!v) return '';
+    return v.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+</body>
+</html>
